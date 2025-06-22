@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Freesound Remix Sources Extractor</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+    }
+    .container {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      font-family: monospace;
+    }
+    #preview {
+      background: yellow;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>Freesound Remix Sources Extractor</h2>
+  <div class="container">
+    <textarea id="input" placeholder="Paste HTML here..."></textarea>
+    <textarea id="output" readonly placeholder="Formatted HTML output..."></textarea>
+  </div>
+  <div id="preview"></div>
+
+  <script>
+    const licenseMap = {
+      'bw-icon-zero': { shortname: 'cc0', url: 'https://creativecommons.org/publicdomain/zero/1.0/' },
+      'bw-icon-by': { shortname: 'by', url: 'https://creativecommons.org/licenses/by/4.0/' },
+      'bw-icon-by-nc': { shortname: 'by-nc', url: 'http://creativecommons.org/licenses/by-nc/4.0/' },
+      'bw-icon-splus': { shortname: 'splus', url: 'http://creativecommons.org/licenses/sampling+/1.0/' },
+    };
+
+    document.getElementById('input').addEventListener('input', () => {
+      const input = document.getElementById('input').value;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(input, 'text/html');
+
+      const soundDivs = [...doc.querySelectorAll("[aria-label^='Sound']")];
+      const byUsers = {};
+
+      soundDivs.forEach(div => {
+        const soundLink = div.querySelector("a.bw-link--black");
+        const userLink = div.querySelector("a[title^='Username']");
+        const licenseSpan = div.querySelector(".bw-icon-zero, .bw-icon-by");
+
+        if (!soundLink || !userLink) return;
+
+        const soundname = soundLink.getAttribute('title');
+        const soundURL = 'https://freesound.org' + soundLink.getAttribute('href');
+        const username = userLink.getAttribute('title').replace('Username: ', '');
+        const userURL = 'https://freesound.org' + userLink.getAttribute('href');
+
+        const licenseClass = licenseSpan?.classList[0] || '';
+        const license = licenseMap[licenseClass] || { shortname: 'unknown', url: '#' };
+
+        if (!byUsers[username]) byUsers[username] = { url: userURL, sounds: [] };
+
+        byUsers[username].sounds.push({
+          name: soundname,
+          url: soundURL,
+          licenseName: license.shortname,
+          licenseURL: license.url
+        });
+      });
+
+      const lines = [];
+      for (const [username, data] of Object.entries(byUsers)) {
+        const links = data.sounds.map(s =>
+          `<a href='${s.url}'>${s.name}</a> (<a href='${s.licenseURL}'>${s.licenseName}</a>)`
+        ).join(', ');
+        lines.push(`${links} by <a href="${data.url}">${username}</a>`);
+      }
+
+      const output = lines.join('\n');
+      const outputHTML = lines.join('<br>');
+      document.getElementById('output').value = output;
+      document.getElementById('preview').innerHTML = outputHTML;
+    });
+  </script>
+</body>
+</html>
