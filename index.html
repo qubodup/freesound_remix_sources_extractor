@@ -36,6 +36,9 @@
   <div id="preview"></div>
 
   <script>
+    // self-select output
+    document.getElementById('output').addEventListener('click', function () { this.select(); }
+    
     const licenseMap = {
       'bw-icon-zero': { shortname: 'cc0', url: 'https://creativecommons.org/publicdomain/zero/1.0/' },
       'bw-icon-by': { shortname: 'by', url: 'https://creativecommons.org/licenses/by/4.0/' },
