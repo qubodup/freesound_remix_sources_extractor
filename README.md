@@ -26,3 +26,7 @@ Extract and convert remix sources info from sound edit pages into description-fr
    ![image](https://github.com/user-attachments/assets/faf50557-138b-4de6-b6f1-6ff38b06f72e)
 
    You can copy the HTML code on the right to paste it into your Freesound sound description
+
+# Note to self
+
+Icon made with xiconeditor.com
